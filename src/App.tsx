@@ -5,11 +5,19 @@ type Point = {
   y: number
 }
 
+type Particle = Point & {
+  id: number
+  size: number
+}
+
 const viewBoxSize = 1000
 
 export function App() {
   const practiceAreaRef = useRef<SVGSVGElement>(null)
-  const [stroke, setStroke] = useState<Point[]>([])
+  const particleIdRef = useRef(0)
+  const lastPointRef = useRef<Point | null>(null)
+  const [strokes, setStrokes] = useState<Point[][]>([])
+  const [particles, setParticles] = useState<Particle[]>([])
   const [isTracing, setIsTracing] = useState(false)
 
   function getPoint(event: React.PointerEvent<SVGSVGElement>): Point | null {
@@ -29,7 +37,24 @@ export function App() {
 
     event.currentTarget.setPointerCapture(event.pointerId)
     setIsTracing(true)
-    setStroke([point])
+    setStrokes((currentStrokes) => [...currentStrokes, [point]])
+    lastPointRef.current = point
+    addParticle(point)
+  }
+
+  function addParticle(point: Point) {
+    const particle = {
+      ...point,
+      id: particleIdRef.current,
+      size: 9 + (particleIdRef.current % 3) * 3,
+    }
+    particleIdRef.current += 1
+    setParticles((currentParticles) => [...currentParticles, particle].slice(-24))
+    window.setTimeout(() => {
+      setParticles((currentParticles) =>
+        currentParticles.filter(({ id }) => id !== particle.id),
+      )
+    }, 700)
   }
 
   function handlePointerMove(event: React.PointerEvent<SVGSVGElement>) {
@@ -37,17 +62,37 @@ export function App() {
     const point = getPoint(event)
     if (!point) return
 
-    setStroke((currentStroke) => [...currentStroke, point])
+    const previousPoint = lastPointRef.current
+    const distance = previousPoint
+      ? Math.hypot(point.x - previousPoint.x, point.y - previousPoint.y)
+      : Infinity
+
+    if (distance > 22) addParticle(point)
+    lastPointRef.current = point
+    setStrokes((currentStrokes) => {
+      if (currentStrokes.length === 0) return [[point]]
+
+      const nextStrokes = [...currentStrokes]
+      const lastStroke = nextStrokes[nextStrokes.length - 1]
+      nextStrokes[nextStrokes.length - 1] = [...lastStroke, point]
+      return nextStrokes
+    })
   }
 
   function finishTracing(event: React.PointerEvent<SVGSVGElement>) {
     if (event.currentTarget.hasPointerCapture(event.pointerId)) {
       event.currentTarget.releasePointerCapture(event.pointerId)
     }
+    lastPointRef.current = null
     setIsTracing(false)
   }
 
-  const strokePoints = stroke.map(({ x, y }) => `${x},${y}`).join(' ')
+  function clearDrawing() {
+    setStrokes([])
+    setParticles([])
+    lastPointRef.current = null
+    setIsTracing(false)
+  }
 
   return (
     <main className="app-shell">
@@ -82,27 +127,35 @@ export function App() {
           onPointerUp={finishTracing}
           onPointerCancel={finishTracing}
         >
-          <path
-            className="character-outline"
-            d="M280 235 C390 175 645 180 720 275 C760 325 735 400 655 430 C570 462 400 440 335 505 C265 575 320 690 470 720 C595 745 720 700 760 590"
-          />
-          <path
-            className="character-outline"
-            d="M505 135 C490 270 475 450 460 625 C450 745 500 815 605 825"
-          />
-          <path
-            className="character-outline"
-            d="M700 475 C650 520 635 610 660 685 C680 745 735 765 785 730"
-          />
-          {stroke.length > 0 && (
-            <polyline className="user-stroke" points={strokePoints} />
-          )}
+          <text className="character-outline" x="500" y="730" textAnchor="middle">
+            あ
+          </text>
+          {strokes.map((currentStroke, index) => (
+            <polyline
+              key={`stroke-${index}`}
+              className="user-stroke"
+              points={currentStroke.map(({ x, y }) => `${x},${y}`).join(' ')}
+            />
+          ))}
+          {particles.map((particle) => (
+            <circle
+              key={particle.id}
+              className="trace-particle"
+              cx={particle.x}
+              cy={particle.y}
+              r={particle.size}
+            />
+          ))}
         </svg>
       </section>
 
       <p className={`touch-status${isTracing ? ' is-active' : ''}`} aria-live="polite">
         {isTracing ? 'なぞっているよ' : 'ここを さわってね'}
       </p>
+      <button className="clear-button" type="button" onClick={clearDrawing}>
+        <span aria-hidden="true">↻</span>
+        もういちど
+      </button>
     </main>
   )
 }

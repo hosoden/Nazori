@@ -137,11 +137,13 @@ h1 {
 }
 
 .character-outline {
-  fill: none;
-  stroke: #b7dcd4;
-  stroke-width: 76;
-  stroke-linecap: round;
-  stroke-linejoin: round;
+  fill: #d4ebe5;
+  font-family: 'Hiragino Maru Gothic ProN', 'Yu Gothic', sans-serif;
+  font-size: 690px;
+  font-weight: 900;
+  paint-order: stroke fill;
+  stroke: #acd8ce;
+  stroke-width: 20px;
 }
 
 .user-stroke {
@@ -151,6 +153,31 @@ h1 {
   stroke-linecap: round;
   stroke-linejoin: round;
   opacity: 0.88;
+}
+
+.trace-particle {
+  fill: #f7c85d;
+  opacity: 0;
+  pointer-events: none;
+  animation: particle-pop 700ms ease-out forwards;
+}
+
+@keyframes particle-pop {
+  0% {
+    opacity: 0.95;
+    transform: scale(0.4);
+    transform-box: fill-box;
+    transform-origin: center;
+  }
+
+  65% {
+    opacity: 0.75;
+  }
+
+  100% {
+    opacity: 0;
+    transform: scale(1.8) translateY(-10px);
+  }
 }
 
 .sparkle {
@@ -182,6 +209,40 @@ h1 {
 
 .touch-status.is-active {
   color: #d87861;
+}
+
+.clear-button {
+  justify-self: center;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 46px;
+  margin: 0 0 2px;
+  padding: 8px 18px;
+  border: 2px solid #c9dfd9;
+  border-radius: 999px;
+  color: #326e6a;
+  background: rgba(255, 255, 255, 0.76);
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 800;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.clear-button span {
+  font-size: 1.25rem;
+  line-height: 1;
+}
+
+.clear-button:active {
+  transform: translateY(1px);
+  background: #e5f3ef;
+}
+
+.clear-button:focus-visible {
+  outline: 3px solid #f2bf4e;
+  outline-offset: 3px;
 }
 
 @media (orientation: landscape) and (max-height: 620px) {

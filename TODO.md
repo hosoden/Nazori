@@ -98,7 +98,7 @@ AI実装後、iPad Safariで確認し、人間の承認を受けるまでTODO 2�
 
 ## TODO 2: なぞると視覚的に反応する
 
-- 状態: `NOT_STARTED`
+- 状態: `HUMAN_VERIFICATION_REQUIRED`
 - 依存TODO: `TODO 1`
 
 ### 顧客価値
@@ -154,6 +154,13 @@ AI実装後、iPad Safariで確認し、人間の承認を受けるまでTODO 2�
 ### Human Verification Gate
 
 人間がiPadで操作感を確認し、承認するまでTODO 3を開始しない。
+
+### 実装記録
+
+- 実装済み: 2026-09-06
+- ローカルビルド: `npm run build` 成功
+- 実装内容: 複数ストロークの入力軌跡、短命な粒子フィードバック、最大24個の粒子制限、描画エリア外のクリアボタン
+- 人間確認待ち: iPad Safari、指、Apple Pencil、PCマウス
 
 ---
 

@@ -371,7 +371,7 @@ iPad実機で文字選択を確認し、承認するまでTODO 5を開始しな�
 
 ## TODO 6: 音でも楽しめる
 
-- 状態: `NOT_STARTED`
+- 状態: `COMPLETED`
 - 依存TODO: `TODO 5`
 
 ### 顧客価値
@@ -426,6 +426,13 @@ iPad実機で文字選択を確認し、承認するまでTODO 5を開始しな�
 ### Human Verification Gate
 
 iPad Safariで音声を確認し、承認するまでTODO 7を開始しない。
+
+### 実装記録
+
+- 実装済み: 2026-09-06
+- ローカルビルド: `npm run build` 成功
+- ブラウザ確認: 音声ON/OFF切り替え後も描画操作が継続することを確認
+- 人間確認済み: `TODO 6 OK`
 
 ---
 

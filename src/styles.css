@@ -48,6 +48,37 @@ svg {
   min-height: 48px;
 }
 
+.sound-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-height: 42px;
+  padding: 7px 11px;
+  border: 2px solid #c9dfd9;
+  border-radius: 999px;
+  color: #326e6a;
+  background: rgba(255, 255, 255, 0.72);
+  font: inherit;
+  font-size: 0.72rem;
+  font-weight: 800;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.sound-button span:first-child {
+  font-size: 1.15rem;
+  line-height: 1;
+}
+
+.sound-button:active {
+  transform: translateY(1px);
+}
+
+.sound-button:focus-visible {
+  outline: 3px solid #f2bf4e;
+  outline-offset: 3px;
+}
+
 .character-picker {
   display: flex;
   justify-content: center;

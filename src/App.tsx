@@ -100,6 +100,8 @@ export function App() {
   const particleIdRef = useRef(0)
   const lastPointRef = useRef<Point | null>(null)
   const activeStrokeRef = useRef<Point[]>([])
+  const audioContextRef = useRef<AudioContext | null>(null)
+  const lastSoundTimeRef = useRef(0)
   const [selectedCharacter, setSelectedCharacter] = useState<(typeof characters)[number]>('あ')
   const [strokes, setStrokes] = useState<Point[][]>([])
   const [activeStroke, setActiveStroke] = useState<Point[]>([])
@@ -107,6 +109,7 @@ export function App() {
   const [isTracing, setIsTracing] = useState(false)
   const [completedStrokeCount, setCompletedStrokeCount] = useState(0)
   const [lastResult, setLastResult] = useState<'success' | 'retry' | null>(null)
+  const [soundEnabled, setSoundEnabled] = useState(true)
   const currentGuideStrokes = guideStrokesByCharacter[selectedCharacter]
   const currentWords = characterWords[selectedCharacter]
 
@@ -133,6 +136,37 @@ export function App() {
     lastPointRef.current = point
     setLastResult(null)
     addParticle(point)
+    playSound(440, 0.08)
+  }
+
+  function getAudioContext() {
+    if (!soundEnabled) return null
+    if (!audioContextRef.current && 'AudioContext' in window) {
+      audioContextRef.current = new AudioContext()
+    }
+    return audioContextRef.current
+  }
+
+  function playSound(frequency: number, duration: number) {
+    try {
+      const audioContext = getAudioContext()
+      if (!audioContext) return
+
+      if (audioContext.state === 'suspended') void audioContext.resume()
+      const oscillator = audioContext.createOscillator()
+      const gain = audioContext.createGain()
+      const startTime = audioContext.currentTime
+      oscillator.type = 'sine'
+      oscillator.frequency.setValueAtTime(frequency, startTime)
+      gain.gain.setValueAtTime(0.0001, startTime)
+      gain.gain.exponentialRampToValueAtTime(0.045, startTime + 0.01)
+      gain.gain.exponentialRampToValueAtTime(0.0001, startTime + duration)
+      oscillator.connect(gain)
+      gain.connect(audioContext.destination)
+      oscillator.start(startTime)
+      oscillator.stop(startTime + duration)
+    } catch {
+    }
   }
 
   function addParticle(point: Point) {
@@ -162,6 +196,10 @@ export function App() {
       : Infinity
 
     if (distance > 22) addParticle(point)
+    if (distance > 45 && performance.now() - lastSoundTimeRef.current > 90) {
+      lastSoundTimeRef.current = performance.now()
+      playSound(620, 0.06)
+    }
     lastPointRef.current = point
     activeStrokeRef.current = [...activeStrokeRef.current, point]
     setActiveStroke(activeStrokeRef.current)
@@ -180,6 +218,7 @@ export function App() {
         setStrokes((currentStrokes) => [...currentStrokes, finishedStroke])
         setCompletedStrokeCount((count) => count + 1)
         setLastResult('success')
+        playSound(880, 0.16)
       } else {
         setLastResult('retry')
       }
@@ -237,6 +276,20 @@ export function App() {
           <span aria-hidden="true">1</span>
           <span>もじめ</span>
         </div>
+        <button
+          className="sound-button"
+          type="button"
+          aria-label={soundEnabled ? 'おとを けす' : 'おとを つける'}
+          aria-pressed={soundEnabled}
+          onClick={() => {
+            const nextSoundEnabled = !soundEnabled
+            setSoundEnabled(nextSoundEnabled)
+            if (nextSoundEnabled) playSound(520, 0.08)
+          }}
+        >
+          <span aria-hidden="true">{soundEnabled ? '♪' : '♪̸'}</span>
+          <span>{soundEnabled ? 'おとあり' : 'おとなし'}</span>
+        </button>
       </header>
 
       <nav className="character-picker" aria-label="れんしゅうする もじ">

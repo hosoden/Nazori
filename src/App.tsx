@@ -10,7 +10,7 @@ type Particle = Point & {
   size: number
 }
 
-const guideStrokes: Point[][] = [
+const defaultGuideStrokes: Point[][] = [
   [
     { x: 300, y: 270 },
     { x: 390, y: 250 },
@@ -38,20 +38,57 @@ const guideStrokes: Point[][] = [
   ],
 ]
 
+const guideStrokesByCharacter = {
+  あ: defaultGuideStrokes,
+  い: [
+    [
+      { x: 390, y: 280 },
+      { x: 370, y: 390 },
+      { x: 365, y: 510 },
+      { x: 390, y: 610 },
+    ],
+    [
+      { x: 590, y: 285 },
+      { x: 575, y: 410 },
+      { x: 580, y: 535 },
+      { x: 625, y: 640 },
+    ],
+  ],
+  う: [
+    [
+      { x: 420, y: 300 },
+      { x: 455, y: 390 },
+      { x: 480, y: 470 },
+    ],
+    [
+      { x: 610, y: 260 },
+      { x: 650, y: 360 },
+      { x: 665, y: 490 },
+      { x: 640, y: 610 },
+      { x: 570, y: 690 },
+      { x: 480, y: 700 },
+      { x: 430, y: 650 },
+    ],
+  ],
+} as const
+
 const viewBoxSize = 1000
 const traceTolerance = 120
+const characters = ['あ', 'い', 'う'] as const
 
 export function App() {
   const practiceAreaRef = useRef<SVGSVGElement>(null)
   const particleIdRef = useRef(0)
   const lastPointRef = useRef<Point | null>(null)
   const activeStrokeRef = useRef<Point[]>([])
+  const [selectedCharacter, setSelectedCharacter] = useState<(typeof characters)[number]>('あ')
   const [strokes, setStrokes] = useState<Point[][]>([])
   const [activeStroke, setActiveStroke] = useState<Point[]>([])
   const [particles, setParticles] = useState<Particle[]>([])
   const [isTracing, setIsTracing] = useState(false)
   const [completedStrokeCount, setCompletedStrokeCount] = useState(0)
   const [lastResult, setLastResult] = useState<'success' | 'retry' | null>(null)
+  const currentGuideStrokes = guideStrokesByCharacter[selectedCharacter]
 
   function getPoint(event: React.PointerEvent<SVGSVGElement>): Point | null {
     const svg = practiceAreaRef.current
@@ -65,8 +102,9 @@ export function App() {
   }
 
   function handlePointerDown(event: React.PointerEvent<SVGSVGElement>) {
+    event.preventDefault()
     const point = getPoint(event)
-    if (!point || completedStrokeCount >= guideStrokes.length) return
+    if (!point || completedStrokeCount >= currentGuideStrokes.length) return
 
     event.currentTarget.setPointerCapture(event.pointerId)
     setIsTracing(true)
@@ -94,6 +132,7 @@ export function App() {
 
   function handlePointerMove(event: React.PointerEvent<SVGSVGElement>) {
     if (!isTracing) return
+    event.preventDefault()
     const point = getPoint(event)
     if (!point) return
 
@@ -114,7 +153,7 @@ export function App() {
     }
     const finishedStroke = activeStrokeRef.current
     if (finishedStroke.length > 1) {
-      const guide = guideStrokes[completedStrokeCount]
+      const guide = currentGuideStrokes[completedStrokeCount]
       const isSuccess = isStrokeSuccessful(finishedStroke, guide)
 
       if (isSuccess) {
@@ -133,7 +172,7 @@ export function App() {
     setIsTracing(false)
   }
 
-  function isStrokeSuccessful(stroke: Point[], guide: Point[]) {
+  function isStrokeSuccessful(stroke: Point[], guide: readonly Point[]) {
     const strokeLength = stroke.reduce((total, point, index) => {
       if (index === 0) return total
       const previousPoint = stroke[index - 1]
@@ -159,7 +198,7 @@ export function App() {
     setIsTracing(false)
   }
 
-  const statusText = completedStrokeCount === guideStrokes.length
+  const statusText = completedStrokeCount === currentGuideStrokes.length
     ? 'できた！'
     : lastResult === 'success'
       ? `${completedStrokeCount}かいめ できた！`
@@ -180,13 +219,31 @@ export function App() {
         </div>
       </header>
 
+      <nav className="character-picker" aria-label="れんしゅうする もじ">
+        {characters.map((character) => (
+          <button
+            key={character}
+            className={`character-button${character === selectedCharacter ? ' is-selected' : ''}`}
+            type="button"
+            aria-label={`${character}を れんしゅうする`}
+            aria-pressed={character === selectedCharacter}
+            onClick={() => {
+              setSelectedCharacter(character)
+              clearDrawing()
+            }}
+          >
+            {character}
+          </button>
+        ))}
+      </nav>
+
       <section className="practice-header" aria-labelledby="practice-title">
         <p className="eyebrow">きょうの もじ</p>
-        <h1 id="practice-title">あ</h1>
+        <h1 id="practice-title">{selectedCharacter}</h1>
         <p className="prompt">ゆびで なぞってみよう</p>
       </section>
 
-      <section className="practice-card" aria-label="あのなぞり練習">
+      <section className="practice-card" aria-label={`${selectedCharacter}のなぞり練習`}>
         <div className="sparkle sparkle-one" aria-hidden="true">✦</div>
         <div className="sparkle sparkle-two" aria-hidden="true">✧</div>
         <svg
@@ -194,17 +251,17 @@ export function App() {
           className="tracing-canvas"
           viewBox={`0 0 ${viewBoxSize} ${viewBoxSize}`}
           role="img"
-          aria-label="あをなぞる場所"
+          aria-label={`${selectedCharacter}をなぞる場所`}
           onPointerDown={handlePointerDown}
           onPointerMove={handlePointerMove}
           onPointerUp={finishTracing}
           onPointerCancel={finishTracing}
         >
           <text className="character-outline" x="500" y="730" textAnchor="middle">
-            あ
+            {selectedCharacter}
           </text>
           <text className="guide-character" x="500" y="730" textAnchor="middle">
-            あ
+            {selectedCharacter}
           </text>
           {strokes.map((currentStroke, index) => (
             <polyline
@@ -231,7 +288,7 @@ export function App() {
         </svg>
       </section>
 
-      <p className={`touch-status${isTracing ? ' is-active' : ''}${completedStrokeCount === guideStrokes.length ? ' is-complete' : ''}`} aria-live="polite">
+      <p className={`touch-status${isTracing ? ' is-active' : ''}${completedStrokeCount === currentGuideStrokes.length ? ' is-complete' : ''}`} aria-live="polite">
         {isTracing ? 'なぞっているよ' : statusText}
       </p>
       <button className="clear-button" type="button" onClick={clearDrawing}>

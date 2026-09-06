@@ -238,7 +238,7 @@ AI実装後、iPad Safariで確認し、人間の承認を受けるまでTODO 2�
 
 ## TODO 4: 好きな文字を選べる
 
-- 状態: `NOT_STARTED`
+- 状態: `COMPLETED`
 - 依存TODO: `TODO 3`
 
 ### 顧客価値
@@ -292,6 +292,15 @@ AI実装後、iPad Safariで確認し、人間の承認を受けるまでTODO 2�
 ### Human Verification Gate
 
 iPad実機で文字選択を確認し、承認するまでTODO 5を開始しない。
+
+### 実装記録
+
+- 実装済み: 2026-09-06
+- ローカルビルド: `npm run build` 成功
+- ブラウザ確認: 「い」選択で見出し・練習領域・aria-label更新、描画リセットを確認
+- 追加修正: 文字ごとの画数・判定ガイドを追加し、「い」「う」の全画完了表示を確認
+- 追加修正: 描画中の文字選択をPointer EventsとWebKit向けCSSで抑止
+- 人間確認済み: `TODO 4 OK`
 
 ---
 

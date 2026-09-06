@@ -163,6 +163,45 @@ h1 {
   box-shadow: 0 14px 0 rgba(224, 187, 126, 0.14);
 }
 
+.word-strip {
+  width: min(100%, 720px);
+  margin: clamp(8px, 1.5vh, 14px) auto 0;
+  text-align: center;
+}
+
+.word-strip-title {
+  margin: 0 0 7px;
+  color: #d87861;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+}
+
+.word-list {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+}
+
+.word-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 42px;
+  padding: 6px 12px;
+  border: 2px solid rgba(66, 151, 143, 0.2);
+  border-radius: 16px;
+  color: #326e6a;
+  background: rgba(255, 255, 255, 0.68);
+  font-size: clamp(0.8rem, 2vw, 0.95rem);
+  font-weight: 800;
+}
+
+.word-image {
+  font-size: 1.35rem;
+  line-height: 1;
+}
+
 .tracing-canvas {
   display: block;
   width: 100%;

@@ -10,6 +10,11 @@ type Particle = Point & {
   size: number
 }
 
+type CharacterWord = {
+  text: string
+  image: string
+}
+
 const defaultGuideStrokes: Point[][] = [
   [
     { x: 300, y: 270 },
@@ -75,6 +80,20 @@ const guideStrokesByCharacter = {
 const viewBoxSize = 1000
 const traceTolerance = 120
 const characters = ['あ', 'い', 'う'] as const
+const characterWords: Record<(typeof characters)[number], CharacterWord[]> = {
+  あ: [
+    { text: 'あめ', image: '☔' },
+    { text: 'あり', image: '🐜' },
+  ],
+  い: [
+    { text: 'いす', image: '🪑' },
+    { text: 'いぬ', image: '🐶' },
+  ],
+  う: [
+    { text: 'うさぎ', image: '🐰' },
+    { text: 'うみ', image: '🌊' },
+  ],
+}
 
 export function App() {
   const practiceAreaRef = useRef<SVGSVGElement>(null)
@@ -89,6 +108,7 @@ export function App() {
   const [completedStrokeCount, setCompletedStrokeCount] = useState(0)
   const [lastResult, setLastResult] = useState<'success' | 'retry' | null>(null)
   const currentGuideStrokes = guideStrokesByCharacter[selectedCharacter]
+  const currentWords = characterWords[selectedCharacter]
 
   function getPoint(event: React.PointerEvent<SVGSVGElement>): Point | null {
     const svg = practiceAreaRef.current
@@ -286,6 +306,20 @@ export function App() {
             />
           ))}
         </svg>
+      </section>
+
+      <section className="word-strip" aria-label={`${selectedCharacter}のことば`}>
+        <p className="word-strip-title">{selectedCharacter}の ことば</p>
+        <div className="word-list">
+          {currentWords.map((word) => (
+            <div className="word-item" key={word.text}>
+              <span className="word-image" role="img" aria-label={word.text}>
+                {word.image}
+              </span>
+              <span>{word.text}</span>
+            </div>
+          ))}
+        </div>
       </section>
 
       <p className={`touch-status${isTracing ? ' is-active' : ''}${completedStrokeCount === currentGuideStrokes.length ? ' is-complete' : ''}`} aria-live="polite">

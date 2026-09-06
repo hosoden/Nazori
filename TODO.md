@@ -25,7 +25,7 @@
 
 ## TODO 1: 1文字を見て、指でなぞる
 
-- 状態: `HUMAN_VERIFICATION_REQUIRED`
+- 状態: `COMPLETED`
 - 依存TODO: なし
 
 ### 顧客価値
@@ -92,7 +92,7 @@ AI実装後、iPad Safariで確認し、人間の承認を受けるまでTODO 2�
 
 - 実装済み: 2026-09-06
 - ローカルビルド: `npm run build` 成功
-- 人間確認待ち: iPad Safari、指、Apple Pencil、マウス、縦向き・横向き
+- 人間確認済み: `TODO 1 OK`
 
 ---
 

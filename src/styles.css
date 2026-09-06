@@ -1,0 +1,217 @@
+:root {
+  color: #27353a;
+  background: #fff8ed;
+  font-family: 'Hiragino Maru Gothic ProN', 'Yu Gothic', sans-serif;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  min-width: 320px;
+  min-height: 100%;
+  margin: 0;
+}
+
+body {
+  min-height: 100svh;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 10% 15%, rgba(255, 214, 141, 0.45) 0 7%, transparent 7.3%),
+    radial-gradient(circle at 88% 82%, rgba(164, 218, 208, 0.35) 0 8%, transparent 8.3%),
+    #fff8ed;
+}
+
+button,
+svg {
+  -webkit-tap-highlight-color: transparent;
+}
+
+.app-shell {
+  display: grid;
+  grid-template-rows: auto auto minmax(0, 1fr) auto;
+  min-height: 100svh;
+  padding: max(18px, env(safe-area-inset-top)) max(20px, env(safe-area-inset-right)) max(18px, env(safe-area-inset-bottom)) max(20px, env(safe-area-inset-left));
+  margin: 0 auto;
+  width: min(100%, 920px);
+}
+
+.top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 48px;
+}
+
+.brand-mark {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  color: #326e6a;
+  font-size: clamp(0.9rem, 2vw, 1.1rem);
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+
+.brand-dot {
+  display: block;
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  background: #f39277;
+  box-shadow: 7px -4px 0 #f7c85d;
+}
+
+.progress-badge {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+  padding: 8px 13px;
+  border-radius: 999px;
+  color: #326e6a;
+  background: #e5f3ef;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.progress-badge span:first-child {
+  font-size: 1.2rem;
+  line-height: 1;
+}
+
+.practice-header {
+  padding: clamp(6px, 2vh, 22px) 0 clamp(3px, 1vh, 10px);
+  text-align: center;
+}
+
+.eyebrow {
+  margin: 0;
+  color: #d87861;
+  font-size: clamp(0.75rem, 1.8vw, 0.95rem);
+  font-weight: 800;
+  letter-spacing: 0.16em;
+}
+
+h1 {
+  margin: 2px 0 0;
+  color: #2e7c78;
+  font-size: clamp(3.5rem, 11vw, 6rem);
+  font-weight: 900;
+  line-height: 0.95;
+}
+
+.prompt {
+  margin: 10px 0 0;
+  color: #71807f;
+  font-size: clamp(0.9rem, 2vw, 1rem);
+  font-weight: 700;
+}
+
+.practice-card {
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-height: 0;
+  margin: 4px auto 0;
+  width: min(100%, 720px);
+  border: 3px solid rgba(66, 151, 143, 0.3);
+  border-radius: 34px;
+  background: rgba(255, 255, 255, 0.64);
+  box-shadow: 0 14px 0 rgba(224, 187, 126, 0.14);
+}
+
+.tracing-canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  padding: 5%;
+  cursor: crosshair;
+  touch-action: none;
+  user-select: none;
+}
+
+.character-outline {
+  fill: none;
+  stroke: #b7dcd4;
+  stroke-width: 76;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.user-stroke {
+  fill: none;
+  stroke: #f39277;
+  stroke-width: 22;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: 0.88;
+}
+
+.sparkle {
+  position: absolute;
+  color: #f2bf4e;
+  font-size: clamp(1.5rem, 4vw, 2.4rem);
+  pointer-events: none;
+}
+
+.sparkle-one {
+  top: 12%;
+  left: 11%;
+}
+
+.sparkle-two {
+  right: 12%;
+  bottom: 15%;
+  color: #e99b85;
+}
+
+.touch-status {
+  min-height: 30px;
+  margin: clamp(9px, 2vh, 18px) 0 0;
+  color: #71807f;
+  font-size: clamp(0.85rem, 2vw, 1rem);
+  font-weight: 700;
+  text-align: center;
+}
+
+.touch-status.is-active {
+  color: #d87861;
+}
+
+@media (orientation: landscape) and (max-height: 620px) {
+  .app-shell {
+    grid-template-rows: auto auto minmax(0, 1fr) auto;
+  }
+
+  .practice-header {
+    padding-top: 0;
+  }
+
+  h1 {
+    font-size: clamp(2.5rem, 9vh, 4.4rem);
+  }
+
+  .prompt {
+    margin-top: 4px;
+  }
+
+  .practice-card {
+    width: min(78vw, 650px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
+}

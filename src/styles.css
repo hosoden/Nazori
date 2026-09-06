@@ -36,7 +36,7 @@ svg {
   display: grid;
   grid-template-rows: auto auto minmax(0, 1fr) auto;
   min-height: 100svh;
-  padding: max(18px, env(safe-area-inset-top)) max(20px, env(safe-area-inset-right)) max(18px, env(safe-area-inset-bottom)) max(20px, env(safe-area-inset-left));
+  padding: max(10px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) max(10px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
   margin: 0 auto;
   width: min(100%, 920px);
 }
@@ -45,15 +45,15 @@ svg {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  min-height: 48px;
+  min-height: 38px;
 }
 
 .sound-button {
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  min-height: 42px;
-  padding: 7px 11px;
+  min-height: 36px;
+  padding: 5px 9px;
   border: 2px solid #c9dfd9;
   border-radius: 999px;
   color: #326e6a;
@@ -80,23 +80,60 @@ svg {
 }
 
 .character-picker {
+  display: grid;
+  justify-content: center;
+  gap: 4px;
+  padding: 3px 0 1px;
+}
+
+.kana-switcher,
+.character-buttons {
   display: flex;
   justify-content: center;
-  gap: 12px;
-  padding: 9px 0 2px;
+  gap: 8px;
+}
+
+.kana-switcher {
+  padding: 3px;
+  border-radius: 16px;
+  background: rgba(229, 243, 239, 0.8);
+}
+
+.kana-switch-button {
+  min-height: 36px;
+  padding: 6px 13px;
+  border: 2px solid transparent;
+  border-radius: 12px;
+  color: #326e6a;
+  background: transparent;
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 800;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.kana-switch-button.is-selected {
+  border-color: #f2bf4e;
+  background: #fff1c9;
+}
+
+.kana-switch-button:focus-visible {
+  outline: 3px solid #f39277;
+  outline-offset: 2px;
 }
 
 .character-button {
   display: grid;
   place-items: center;
-  width: clamp(62px, 14vw, 82px);
+  width: clamp(50px, 11vw, 68px);
   aspect-ratio: 1;
   border: 3px solid transparent;
-  border-radius: 22px;
+  border-radius: 16px;
   color: #326e6a;
   background: rgba(255, 255, 255, 0.72);
   font: inherit;
-  font-size: clamp(1.8rem, 5vw, 2.5rem);
+  font-size: clamp(1.45rem, 4vw, 2rem);
   font-weight: 900;
   cursor: pointer;
   touch-action: manipulation;
@@ -154,7 +191,7 @@ svg {
 }
 
 .practice-header {
-  padding: clamp(6px, 2vh, 22px) 0 clamp(3px, 1vh, 10px);
+  padding: clamp(2px, 0.7vh, 8px) 0 2px;
   text-align: center;
 }
 
@@ -167,15 +204,15 @@ svg {
 }
 
 h1 {
-  margin: 2px 0 0;
+  margin: 0;
   color: #2e7c78;
-  font-size: clamp(3.5rem, 11vw, 6rem);
+  font-size: clamp(2.8rem, 8vw, 4.8rem);
   font-weight: 900;
   line-height: 0.95;
 }
 
 .prompt {
-  margin: 10px 0 0;
+  margin: 4px 0 0;
   color: #71807f;
   font-size: clamp(0.9rem, 2vw, 1rem);
   font-weight: 700;
@@ -186,22 +223,23 @@ h1 {
   display: grid;
   place-items: center;
   min-height: 0;
-  margin: 4px auto 0;
+  height: min(55vh, 560px);
+  margin: 2px auto 0;
   width: min(100%, 720px);
   border: 3px solid rgba(66, 151, 143, 0.3);
-  border-radius: 34px;
+  border-radius: 26px;
   background: rgba(255, 255, 255, 0.64);
   box-shadow: 0 14px 0 rgba(224, 187, 126, 0.14);
 }
 
 .word-strip {
   width: min(100%, 720px);
-  margin: clamp(8px, 1.5vh, 14px) auto 0;
+  margin: clamp(3px, 0.7vh, 7px) auto 0;
   text-align: center;
 }
 
 .word-strip-title {
-  margin: 0 0 7px;
+  margin: 0 0 3px;
   color: #d87861;
   font-size: 0.78rem;
   font-weight: 800;
@@ -218,8 +256,8 @@ h1 {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  min-height: 42px;
-  padding: 6px 12px;
+  min-height: 32px;
+  padding: 3px 9px;
   border: 2px solid rgba(66, 151, 143, 0.2);
   border-radius: 16px;
   color: #326e6a;
@@ -229,7 +267,7 @@ h1 {
 }
 
 .word-image {
-  font-size: 1.35rem;
+  font-size: 1.05rem;
   line-height: 1;
 }
 
@@ -331,8 +369,8 @@ h1 {
 }
 
 .touch-status {
-  min-height: 30px;
-  margin: clamp(9px, 2vh, 18px) 0 0;
+  min-height: 22px;
+  margin: clamp(3px, 0.7vh, 7px) 0 0;
   color: #71807f;
   font-size: clamp(0.85rem, 2vw, 1rem);
   font-weight: 700;
@@ -353,9 +391,9 @@ h1 {
   display: inline-flex;
   align-items: center;
   gap: 7px;
-  min-height: 46px;
+  min-height: 38px;
   margin: 0 0 2px;
-  padding: 8px 18px;
+  padding: 5px 14px;
   border: 2px solid #c9dfd9;
   border-radius: 999px;
   color: #326e6a;
@@ -365,6 +403,40 @@ h1 {
   font-weight: 800;
   cursor: pointer;
   touch-action: manipulation;
+}
+
+.next-button {
+  justify-self: center;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 48px;
+  margin: 0 0 2px;
+  padding: 8px 20px;
+  border: 0;
+  border-radius: 999px;
+  color: #fff;
+  background: #2e7c78;
+  font: inherit;
+  font-size: 0.95rem;
+  font-weight: 900;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.next-button span {
+  font-size: 1.3rem;
+  line-height: 1;
+}
+
+.next-button:active {
+  transform: translateY(1px);
+  background: #25645f;
+}
+
+.next-button:focus-visible {
+  outline: 3px solid #f2bf4e;
+  outline-offset: 3px;
 }
 
 .clear-button span {
@@ -380,6 +452,30 @@ h1 {
 .clear-button:focus-visible {
   outline: 3px solid #f2bf4e;
   outline-offset: 3px;
+}
+
+@media (max-height: 760px) and (orientation: portrait) {
+  .practice-header {
+    padding-top: 0;
+  }
+
+  .eyebrow,
+  .prompt {
+    font-size: 0.72rem;
+  }
+
+  h1 {
+    font-size: 2.7rem;
+  }
+
+  .word-strip-title {
+    display: none;
+  }
+
+  .word-item {
+    min-height: 28px;
+    padding: 2px 7px;
+  }
 }
 
 @media (orientation: landscape) and (max-height: 620px) {
@@ -401,6 +497,7 @@ h1 {
 
   .practice-card {
     width: min(78vw, 650px);
+    height: min(58vh, 360px);
   }
 }
 

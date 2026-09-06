@@ -15,72 +15,16 @@ type CharacterWord = {
   image: string
 }
 
-const defaultGuideStrokes: Point[][] = [
-  [
-    { x: 300, y: 270 },
-    { x: 390, y: 250 },
-    { x: 500, y: 245 },
-    { x: 610, y: 250 },
-    { x: 700, y: 275 },
-  ],
-  [
-    { x: 510, y: 175 },
-    { x: 500, y: 300 },
-    { x: 490, y: 430 },
-    { x: 480, y: 560 },
-    { x: 475, y: 680 },
-  ],
-  [
-    { x: 690, y: 365 },
-    { x: 650, y: 420 },
-    { x: 630, y: 500 },
-    { x: 640, y: 585 },
-    { x: 700, y: 635 },
-    { x: 770, y: 620 },
-    { x: 790, y: 545 },
-    { x: 775, y: 470 },
-    { x: 720, y: 430 },
-  ],
-]
-
-const guideStrokesByCharacter = {
-  あ: defaultGuideStrokes,
-  い: [
-    [
-      { x: 390, y: 280 },
-      { x: 370, y: 390 },
-      { x: 365, y: 510 },
-      { x: 390, y: 610 },
-    ],
-    [
-      { x: 590, y: 285 },
-      { x: 575, y: 410 },
-      { x: 580, y: 535 },
-      { x: 625, y: 640 },
-    ],
-  ],
-  う: [
-    [
-      { x: 420, y: 300 },
-      { x: 455, y: 390 },
-      { x: 480, y: 470 },
-    ],
-    [
-      { x: 610, y: 260 },
-      { x: 650, y: 360 },
-      { x: 665, y: 490 },
-      { x: 640, y: 610 },
-      { x: 570, y: 690 },
-      { x: 480, y: 700 },
-      { x: 430, y: 650 },
-    ],
-  ],
-} as const
+type SupportedCharacter = string
+type KanaType = 'hiragana' | 'katakana'
 
 const viewBoxSize = 1000
-const traceTolerance = 120
-const characters = ['あ', 'い', 'う'] as const
-const characterWords: Record<(typeof characters)[number], CharacterWord[]> = {
+const hiraganaCharacters = [...'あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわをん'] as SupportedCharacter[]
+const katakanaCharacters = [...'アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン'] as SupportedCharacter[]
+const characters = [...hiraganaCharacters, ...katakanaCharacters]
+const initialHiraganaCandidates = ['え', 'お', 'か']
+const initialKatakanaCandidates = ['エ', 'オ', 'カ']
+const characterWords: Record<string, CharacterWord[]> = {
   あ: [
     { text: 'あめ', image: '☔' },
     { text: 'あり', image: '🐜' },
@@ -93,6 +37,22 @@ const characterWords: Record<(typeof characters)[number], CharacterWord[]> = {
     { text: 'うさぎ', image: '🐰' },
     { text: 'うみ', image: '🌊' },
   ],
+  え: [{ text: 'えき', image: '🚉' }, { text: 'えんぴつ', image: '✏️' }],
+  お: [{ text: 'おにぎり', image: '🍙' }, { text: 'おはな', image: '🌷' }],
+  ア: [
+    { text: 'あめ', image: '☔' },
+    { text: 'あり', image: '🐜' },
+  ],
+  イ: [
+    { text: 'いす', image: '🪑' },
+    { text: 'いぬ', image: '🐶' },
+  ],
+  ウ: [
+    { text: 'うさぎ', image: '🐰' },
+    { text: 'うみ', image: '🌊' },
+  ],
+  エ: [{ text: 'エレベーター', image: '🛗' }, { text: 'エプロン', image: '🧑‍🍳' }],
+  オ: [{ text: 'オレンジ', image: '🍊' }, { text: 'オムライス', image: '🍳' }],
 }
 
 export function App() {
@@ -102,16 +62,19 @@ export function App() {
   const activeStrokeRef = useRef<Point[]>([])
   const audioContextRef = useRef<AudioContext | null>(null)
   const lastSoundTimeRef = useRef(0)
-  const [selectedCharacter, setSelectedCharacter] = useState<(typeof characters)[number]>('あ')
+  const [kanaType, setKanaType] = useState<KanaType>('hiragana')
+  const [candidateCharacters, setCandidateCharacters] = useState<SupportedCharacter[]>(initialHiraganaCandidates)
+  const [selectedCharacter, setSelectedCharacter] = useState<SupportedCharacter>('え')
+  const [completedCharacters, setCompletedCharacters] = useState<SupportedCharacter[]>([])
   const [strokes, setStrokes] = useState<Point[][]>([])
   const [activeStroke, setActiveStroke] = useState<Point[]>([])
   const [particles, setParticles] = useState<Particle[]>([])
   const [isTracing, setIsTracing] = useState(false)
-  const [completedStrokeCount, setCompletedStrokeCount] = useState(0)
+  const [isComplete, setIsComplete] = useState(false)
   const [lastResult, setLastResult] = useState<'success' | 'retry' | null>(null)
   const [soundEnabled, setSoundEnabled] = useState(true)
-  const currentGuideStrokes = guideStrokesByCharacter[selectedCharacter]
-  const currentWords = characterWords[selectedCharacter]
+  const currentWords = characterWords[selectedCharacter] ?? []
+  const visibleCharacters = candidateCharacters
 
   function getPoint(event: React.PointerEvent<SVGSVGElement>): Point | null {
     const svg = practiceAreaRef.current
@@ -127,7 +90,7 @@ export function App() {
   function handlePointerDown(event: React.PointerEvent<SVGSVGElement>) {
     event.preventDefault()
     const point = getPoint(event)
-    if (!point || completedStrokeCount >= currentGuideStrokes.length) return
+    if (!point) return
 
     event.currentTarget.setPointerCapture(event.pointerId)
     setIsTracing(true)
@@ -211,19 +174,22 @@ export function App() {
     }
     const finishedStroke = activeStrokeRef.current
     if (finishedStroke.length > 1) {
-      const guide = currentGuideStrokes[completedStrokeCount]
-      const isSuccess = isStrokeSuccessful(finishedStroke, guide)
-
-      if (isSuccess) {
-        setStrokes((currentStrokes) => [...currentStrokes, finishedStroke])
-        setCompletedStrokeCount((count) => count + 1)
+      const allPoints = [...strokes.flat(), ...finishedStroke]
+      setStrokes((currentStrokes) => [...currentStrokes, finishedStroke])
+      if (isDrawingSuccessful(allPoints)) {
+        setIsComplete(true)
         setLastResult('success')
+        setCompletedCharacters((currentCompleted) =>
+          currentCompleted.includes(selectedCharacter)
+            ? currentCompleted
+            : [...currentCompleted, selectedCharacter],
+        )
         playSound(880, 0.16)
       } else {
-        setLastResult('retry')
+        setLastResult(null)
       }
     } else {
-      setLastResult('retry')
+      setLastResult(null)
     }
     lastPointRef.current = null
     activeStrokeRef.current = []
@@ -231,19 +197,24 @@ export function App() {
     setIsTracing(false)
   }
 
-  function isStrokeSuccessful(stroke: Point[], guide: readonly Point[]) {
+  function isDrawingSuccessful(stroke: Point[]) {
     const strokeLength = stroke.reduce((total, point, index) => {
       if (index === 0) return total
       const previousPoint = stroke[index - 1]
       return total + Math.hypot(point.x - previousPoint.x, point.y - previousPoint.y)
     }, 0)
-    const coveredGuidePoints = guide.filter((guidePoint) =>
-      stroke.some(
-        (point) => Math.hypot(point.x - guidePoint.x, point.y - guidePoint.y) <= traceTolerance,
-      ),
-    ).length
-
-    return strokeLength >= 90 && coveredGuidePoints / guide.length >= 0.6
+    const practiceBounds = { minX: 240, maxX: 760, minY: 180, maxY: 780 }
+    const coveredAreas = new Set(
+      stroke
+        .filter(({ x, y }) =>
+          x >= practiceBounds.minX &&
+          x <= practiceBounds.maxX &&
+          y >= practiceBounds.minY &&
+          y <= practiceBounds.maxY,
+        )
+        .map(({ x, y }) => `${Math.floor(x / 100)}:${Math.floor(y / 100)}`),
+    )
+    return strokeLength >= 260 && coveredAreas.size >= 12
   }
 
   function clearDrawing() {
@@ -252,18 +223,32 @@ export function App() {
     setParticles([])
     lastPointRef.current = null
     activeStrokeRef.current = []
-    setCompletedStrokeCount(0)
+    setIsComplete(false)
     setLastResult(null)
     setIsTracing(false)
   }
 
-  const statusText = completedStrokeCount === currentGuideStrokes.length
+  function chooseNextCharacter() {
+    const availableCharacters = kanaType === 'hiragana' ? hiraganaCharacters : katakanaCharacters
+    const nextCharacter = availableCharacters.find(
+      (character) =>
+        !candidateCharacters.includes(character) &&
+        character !== selectedCharacter &&
+        !completedCharacters.includes(character),
+    )
+    if (!nextCharacter) return
+
+    setCandidateCharacters((currentCandidates) => [
+      ...currentCandidates.filter((character) => character !== selectedCharacter),
+      nextCharacter,
+    ])
+    setSelectedCharacter(nextCharacter)
+    clearDrawing()
+  }
+
+  const statusText = isComplete
     ? 'できた！'
-    : lastResult === 'success'
-      ? `${completedStrokeCount}かいめ できた！`
-      : lastResult === 'retry'
-        ? 'もういちど なぞってみよう'
-        : `${completedStrokeCount + 1}かいめを なぞってね`
+    : 'たくさん なぞってね'
 
   return (
     <main className="app-shell">
@@ -293,7 +278,40 @@ export function App() {
       </header>
 
       <nav className="character-picker" aria-label="れんしゅうする もじ">
-        {characters.map((character) => (
+        <div className="kana-switcher" role="group" aria-label="かなの しゅるい">
+          <button
+            className={`kana-switch-button${kanaType === 'hiragana' ? ' is-selected' : ''}`}
+            type="button"
+            aria-pressed={kanaType === 'hiragana'}
+            onClick={() => {
+              setKanaType('hiragana')
+              const nextCandidates = initialHiraganaCandidates
+              setCandidateCharacters(nextCandidates)
+              setSelectedCharacter(nextCandidates[0])
+              setCompletedCharacters([])
+              clearDrawing()
+            }}
+          >
+            ひらがな
+          </button>
+          <button
+            className={`kana-switch-button${kanaType === 'katakana' ? ' is-selected' : ''}`}
+            type="button"
+            aria-pressed={kanaType === 'katakana'}
+            onClick={() => {
+              setKanaType('katakana')
+              const nextCandidates = initialKatakanaCandidates
+              setCandidateCharacters(nextCandidates)
+              setSelectedCharacter(nextCandidates[0])
+              setCompletedCharacters([])
+              clearDrawing()
+            }}
+          >
+            カタカナ
+          </button>
+        </div>
+        <div className="character-buttons" aria-label={`${kanaType === 'hiragana' ? 'ひらがな' : 'カタカナ'}の もじ`}>
+        {visibleCharacters.map((character) => (
           <button
             key={character}
             className={`character-button${character === selectedCharacter ? ' is-selected' : ''}`}
@@ -308,6 +326,7 @@ export function App() {
             {character}
           </button>
         ))}
+        </div>
       </nav>
 
       <section className="practice-header" aria-labelledby="practice-title">
@@ -375,9 +394,15 @@ export function App() {
         </div>
       </section>
 
-      <p className={`touch-status${isTracing ? ' is-active' : ''}${completedStrokeCount === currentGuideStrokes.length ? ' is-complete' : ''}`} aria-live="polite">
+      <p className={`touch-status${isTracing ? ' is-active' : ''}${isComplete ? ' is-complete' : ''}`} aria-live="polite">
         {isTracing ? 'なぞっているよ' : statusText}
       </p>
+      {isComplete && (
+        <button className="next-button" type="button" onClick={chooseNextCharacter}>
+          つぎのもじ
+          <span aria-hidden="true">→</span>
+        </button>
+      )}
       <button className="clear-button" type="button" onClick={clearDrawing}>
         <span aria-hidden="true">↻</span>
         もういちど

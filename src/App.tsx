@@ -407,6 +407,11 @@ export function App() {
         <span aria-hidden="true">↻</span>
         もういちど
       </button>
+      <details className="privacy-details">
+        <summary>ほごしゃのかたへ</summary>
+        <p>このサイトは、とうろく・なまえ・しゃしん・いち・カメラ・マイクをつかいません。</p>
+        <p>れんしゅうのデータは、このブラウザのなかだけでつかいます。こうこくとアクセスかいせきはありません。</p>
+      </details>
     </main>
   )
 }

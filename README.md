@@ -18,3 +18,5 @@ npm run build
 ```
 
 TODOごとの確認項目は[LOCAL_VERIFICATION.md](LOCAL_VERIFICATION.md)を参照してください。
+
+プライバシー方針は[PRIVACY.md](PRIVACY.md)を参照してください。現在のMVPでは、広告・アクセス解析・ユーザー登録・外部データ送信を行いません。

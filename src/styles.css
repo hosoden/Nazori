@@ -146,6 +146,18 @@ h1 {
   stroke-width: 20px;
 }
 
+.guide-character {
+  fill: none;
+  font-family: 'Hiragino Maru Gothic ProN', 'Yu Gothic', sans-serif;
+  font-size: 690px;
+  font-weight: 900;
+  stroke: #f2bf4e;
+  stroke-width: 11px;
+  stroke-dasharray: 2 22;
+  stroke-linecap: round;
+  pointer-events: none;
+}
+
 .user-stroke {
   fill: none;
   stroke: #f39277;
@@ -153,6 +165,11 @@ h1 {
   stroke-linecap: round;
   stroke-linejoin: round;
   opacity: 0.88;
+}
+
+.failed-stroke {
+  stroke: #e9a06f;
+  opacity: 0.58;
 }
 
 .trace-particle {
@@ -209,6 +226,11 @@ h1 {
 
 .touch-status.is-active {
   color: #d87861;
+}
+
+.touch-status.is-complete {
+  color: #2e7c78;
+  font-size: 1.2rem;
 }
 
 .clear-button {

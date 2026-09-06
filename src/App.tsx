@@ -10,15 +10,48 @@ type Particle = Point & {
   size: number
 }
 
+const guideStrokes: Point[][] = [
+  [
+    { x: 300, y: 270 },
+    { x: 390, y: 250 },
+    { x: 500, y: 245 },
+    { x: 610, y: 250 },
+    { x: 700, y: 275 },
+  ],
+  [
+    { x: 510, y: 175 },
+    { x: 500, y: 300 },
+    { x: 490, y: 430 },
+    { x: 480, y: 560 },
+    { x: 475, y: 680 },
+  ],
+  [
+    { x: 690, y: 365 },
+    { x: 650, y: 420 },
+    { x: 630, y: 500 },
+    { x: 640, y: 585 },
+    { x: 700, y: 635 },
+    { x: 770, y: 620 },
+    { x: 790, y: 545 },
+    { x: 775, y: 470 },
+    { x: 720, y: 430 },
+  ],
+]
+
 const viewBoxSize = 1000
+const traceTolerance = 120
 
 export function App() {
   const practiceAreaRef = useRef<SVGSVGElement>(null)
   const particleIdRef = useRef(0)
   const lastPointRef = useRef<Point | null>(null)
+  const activeStrokeRef = useRef<Point[]>([])
   const [strokes, setStrokes] = useState<Point[][]>([])
+  const [activeStroke, setActiveStroke] = useState<Point[]>([])
   const [particles, setParticles] = useState<Particle[]>([])
   const [isTracing, setIsTracing] = useState(false)
+  const [completedStrokeCount, setCompletedStrokeCount] = useState(0)
+  const [lastResult, setLastResult] = useState<'success' | 'retry' | null>(null)
 
   function getPoint(event: React.PointerEvent<SVGSVGElement>): Point | null {
     const svg = practiceAreaRef.current
@@ -33,12 +66,14 @@ export function App() {
 
   function handlePointerDown(event: React.PointerEvent<SVGSVGElement>) {
     const point = getPoint(event)
-    if (!point) return
+    if (!point || completedStrokeCount >= guideStrokes.length) return
 
     event.currentTarget.setPointerCapture(event.pointerId)
     setIsTracing(true)
-    setStrokes((currentStrokes) => [...currentStrokes, [point]])
+    activeStrokeRef.current = [point]
+    setActiveStroke([point])
     lastPointRef.current = point
+    setLastResult(null)
     addParticle(point)
   }
 
@@ -69,30 +104,68 @@ export function App() {
 
     if (distance > 22) addParticle(point)
     lastPointRef.current = point
-    setStrokes((currentStrokes) => {
-      if (currentStrokes.length === 0) return [[point]]
-
-      const nextStrokes = [...currentStrokes]
-      const lastStroke = nextStrokes[nextStrokes.length - 1]
-      nextStrokes[nextStrokes.length - 1] = [...lastStroke, point]
-      return nextStrokes
-    })
+    activeStrokeRef.current = [...activeStrokeRef.current, point]
+    setActiveStroke(activeStrokeRef.current)
   }
 
   function finishTracing(event: React.PointerEvent<SVGSVGElement>) {
     if (event.currentTarget.hasPointerCapture(event.pointerId)) {
       event.currentTarget.releasePointerCapture(event.pointerId)
     }
+    const finishedStroke = activeStrokeRef.current
+    if (finishedStroke.length > 1) {
+      const guide = guideStrokes[completedStrokeCount]
+      const isSuccess = isStrokeSuccessful(finishedStroke, guide)
+
+      if (isSuccess) {
+        setStrokes((currentStrokes) => [...currentStrokes, finishedStroke])
+        setCompletedStrokeCount((count) => count + 1)
+        setLastResult('success')
+      } else {
+        setLastResult('retry')
+      }
+    } else {
+      setLastResult('retry')
+    }
     lastPointRef.current = null
+    activeStrokeRef.current = []
+    setActiveStroke([])
     setIsTracing(false)
+  }
+
+  function isStrokeSuccessful(stroke: Point[], guide: Point[]) {
+    const strokeLength = stroke.reduce((total, point, index) => {
+      if (index === 0) return total
+      const previousPoint = stroke[index - 1]
+      return total + Math.hypot(point.x - previousPoint.x, point.y - previousPoint.y)
+    }, 0)
+    const coveredGuidePoints = guide.filter((guidePoint) =>
+      stroke.some(
+        (point) => Math.hypot(point.x - guidePoint.x, point.y - guidePoint.y) <= traceTolerance,
+      ),
+    ).length
+
+    return strokeLength >= 90 && coveredGuidePoints / guide.length >= 0.6
   }
 
   function clearDrawing() {
     setStrokes([])
+    setActiveStroke([])
     setParticles([])
     lastPointRef.current = null
+    activeStrokeRef.current = []
+    setCompletedStrokeCount(0)
+    setLastResult(null)
     setIsTracing(false)
   }
+
+  const statusText = completedStrokeCount === guideStrokes.length
+    ? 'できた！'
+    : lastResult === 'success'
+      ? `${completedStrokeCount}かいめ できた！`
+      : lastResult === 'retry'
+        ? 'もういちど なぞってみよう'
+        : `${completedStrokeCount + 1}かいめを なぞってね`
 
   return (
     <main className="app-shell">
@@ -130,6 +203,9 @@ export function App() {
           <text className="character-outline" x="500" y="730" textAnchor="middle">
             あ
           </text>
+          <text className="guide-character" x="500" y="730" textAnchor="middle">
+            あ
+          </text>
           {strokes.map((currentStroke, index) => (
             <polyline
               key={`stroke-${index}`}
@@ -137,6 +213,12 @@ export function App() {
               points={currentStroke.map(({ x, y }) => `${x},${y}`).join(' ')}
             />
           ))}
+          {activeStroke.length > 0 && (
+            <polyline
+              className={`user-stroke${lastResult === 'retry' ? ' failed-stroke' : ''}`}
+              points={activeStroke.map(({ x, y }) => `${x},${y}`).join(' ')}
+            />
+          )}
           {particles.map((particle) => (
             <circle
               key={particle.id}
@@ -149,8 +231,8 @@ export function App() {
         </svg>
       </section>
 
-      <p className={`touch-status${isTracing ? ' is-active' : ''}`} aria-live="polite">
-        {isTracing ? 'なぞっているよ' : 'ここを さわってね'}
+      <p className={`touch-status${isTracing ? ' is-active' : ''}${completedStrokeCount === guideStrokes.length ? ' is-complete' : ''}`} aria-live="polite">
+        {isTracing ? 'なぞっているよ' : statusText}
       </p>
       <button className="clear-button" type="button" onClick={clearDrawing}>
         <span aria-hidden="true">↻</span>

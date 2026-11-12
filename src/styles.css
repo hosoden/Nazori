@@ -49,37 +49,6 @@ svg {
   min-height: 38px;
 }
 
-.sound-button {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  min-height: 36px;
-  padding: 5px 9px;
-  border: 2px solid #c9dfd9;
-  border-radius: 999px;
-  color: #326e6a;
-  background: rgba(255, 255, 255, 0.72);
-  font: inherit;
-  font-size: 0.72rem;
-  font-weight: 800;
-  cursor: pointer;
-  touch-action: manipulation;
-}
-
-.sound-button span:first-child {
-  font-size: 1.15rem;
-  line-height: 1;
-}
-
-.sound-button:active {
-  transform: translateY(1px);
-}
-
-.sound-button:focus-visible {
-  outline: 3px solid #f2bf4e;
-  outline-offset: 3px;
-}
-
 .character-picker {
   display: grid;
   justify-content: center;
@@ -453,32 +422,6 @@ h1 {
 .clear-button:focus-visible {
   outline: 3px solid #f2bf4e;
   outline-offset: 3px;
-}
-
-.privacy-details {
-  justify-self: center;
-  width: min(100%, 560px);
-  margin-top: 8px;
-  color: #71807f;
-  font-size: 0.72rem;
-  line-height: 1.5;
-  text-align: center;
-}
-
-.privacy-details summary {
-  display: inline-block;
-  padding: 3px 8px;
-  cursor: pointer;
-  font-weight: 800;
-}
-
-.privacy-details p {
-  margin: 4px 0 0;
-}
-
-.privacy-details summary:focus-visible {
-  outline: 3px solid #f2bf4e;
-  outline-offset: 2px;
 }
 
 @media (max-height: 760px) and (orientation: portrait) {

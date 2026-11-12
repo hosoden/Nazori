@@ -60,8 +60,6 @@ export function App() {
   const particleIdRef = useRef(0)
   const lastPointRef = useRef<Point | null>(null)
   const activeStrokeRef = useRef<Point[]>([])
-  const audioContextRef = useRef<AudioContext | null>(null)
-  const lastSoundTimeRef = useRef(0)
   const [kanaType, setKanaType] = useState<KanaType>('hiragana')
   const [candidateCharacters, setCandidateCharacters] = useState<SupportedCharacter[]>(initialHiraganaCandidates)
   const [selectedCharacter, setSelectedCharacter] = useState<SupportedCharacter>('え')
@@ -72,7 +70,7 @@ export function App() {
   const [isTracing, setIsTracing] = useState(false)
   const [isComplete, setIsComplete] = useState(false)
   const [lastResult, setLastResult] = useState<'success' | 'retry' | null>(null)
-  const [soundEnabled, setSoundEnabled] = useState(true)
+  const [practiceCount, setPracticeCount] = useState(1)
   const currentWords = characterWords[selectedCharacter] ?? []
   const visibleCharacters = candidateCharacters
 
@@ -99,37 +97,6 @@ export function App() {
     lastPointRef.current = point
     setLastResult(null)
     addParticle(point)
-    playSound(440, 0.08)
-  }
-
-  function getAudioContext() {
-    if (!soundEnabled) return null
-    if (!audioContextRef.current && 'AudioContext' in window) {
-      audioContextRef.current = new AudioContext()
-    }
-    return audioContextRef.current
-  }
-
-  function playSound(frequency: number, duration: number) {
-    try {
-      const audioContext = getAudioContext()
-      if (!audioContext) return
-
-      if (audioContext.state === 'suspended') void audioContext.resume()
-      const oscillator = audioContext.createOscillator()
-      const gain = audioContext.createGain()
-      const startTime = audioContext.currentTime
-      oscillator.type = 'sine'
-      oscillator.frequency.setValueAtTime(frequency, startTime)
-      gain.gain.setValueAtTime(0.0001, startTime)
-      gain.gain.exponentialRampToValueAtTime(0.045, startTime + 0.01)
-      gain.gain.exponentialRampToValueAtTime(0.0001, startTime + duration)
-      oscillator.connect(gain)
-      gain.connect(audioContext.destination)
-      oscillator.start(startTime)
-      oscillator.stop(startTime + duration)
-    } catch {
-    }
   }
 
   function addParticle(point: Point) {
@@ -159,10 +126,6 @@ export function App() {
       : Infinity
 
     if (distance > 22) addParticle(point)
-    if (distance > 45 && performance.now() - lastSoundTimeRef.current > 90) {
-      lastSoundTimeRef.current = performance.now()
-      playSound(620, 0.06)
-    }
     lastPointRef.current = point
     activeStrokeRef.current = [...activeStrokeRef.current, point]
     setActiveStroke(activeStrokeRef.current)
@@ -184,7 +147,6 @@ export function App() {
             ? currentCompleted
             : [...currentCompleted, selectedCharacter],
         )
-        playSound(880, 0.16)
       } else {
         setLastResult(null)
       }
@@ -238,6 +200,7 @@ export function App() {
     )
     if (!nextCharacter) return
 
+    setPracticeCount((currentCount) => currentCount + 1)
     setCandidateCharacters((currentCandidates) => [
       ...currentCandidates.filter((character) => character !== selectedCharacter),
       nextCharacter,
@@ -257,24 +220,10 @@ export function App() {
           <span className="brand-dot" aria-hidden="true" />
           <span>なぞりあそび</span>
         </div>
-        <div className="progress-badge" aria-label="れんしゅう 1もじめ">
-          <span aria-hidden="true">1</span>
+        <div className="progress-badge" aria-label={`れんしゅう ${practiceCount}もじめ`}>
+          <span aria-hidden="true">{practiceCount}</span>
           <span>もじめ</span>
         </div>
-        <button
-          className="sound-button"
-          type="button"
-          aria-label={soundEnabled ? 'おとを けす' : 'おとを つける'}
-          aria-pressed={soundEnabled}
-          onClick={() => {
-            const nextSoundEnabled = !soundEnabled
-            setSoundEnabled(nextSoundEnabled)
-            if (nextSoundEnabled) playSound(520, 0.08)
-          }}
-        >
-          <span aria-hidden="true">{soundEnabled ? '♪' : '♪̸'}</span>
-          <span>{soundEnabled ? 'おとあり' : 'おとなし'}</span>
-        </button>
       </header>
 
       <nav className="character-picker" aria-label="れんしゅうする もじ">
@@ -289,6 +238,7 @@ export function App() {
               setCandidateCharacters(nextCandidates)
               setSelectedCharacter(nextCandidates[0])
               setCompletedCharacters([])
+              setPracticeCount(1)
               clearDrawing()
             }}
           >
@@ -304,6 +254,7 @@ export function App() {
               setCandidateCharacters(nextCandidates)
               setSelectedCharacter(nextCandidates[0])
               setCompletedCharacters([])
+              setPracticeCount(1)
               clearDrawing()
             }}
           >
@@ -407,11 +358,6 @@ export function App() {
         <span aria-hidden="true">↻</span>
         もういちど
       </button>
-      <details className="privacy-details">
-        <summary>ほごしゃのかたへ</summary>
-        <p>このサイトは、とうろく・なまえ・しゃしん・いち・カメラ・マイクをつかいません。</p>
-        <p>れんしゅうのデータは、このブラウザのなかだけでつかいます。こうこくとアクセスかいせきはありません。</p>
-      </details>
     </main>
   )
 }
